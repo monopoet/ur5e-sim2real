@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1: 환경 구축 - 업무 체크리스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 5px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            height: 24px;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            color: white;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        .sections {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .section-header:hover {
+            background: #f8fafc;
+        }
+        
+        .section-header.sim { border-left: 5px solid #3b82f6; }
+        .section-header.real { border-left: 5px solid #f97316; }
+        .section-header.valid { border-left: 5px solid #22c55e; }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-icon {
+            font-size: 1.5rem;
+        }
+        
+        .section-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .section-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-duration {
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .section-progress {
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .toggle-icon {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            transition: transform 0.3s;
+        }
+        
+        .section.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        
+        .section.open .section-content {
+            max-height: 2000px;
+        }
+        
+        .subsection {
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .subsection-header {
+            padding: 15px 25px 15px 45px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+            transition: background 0.3s;
+        }
+        
+        .subsection-header:hover {
+            background: #f1f5f9;
+        }
+        
+        .subsection-title {
+            font-weight: 500;
+            color: #334155;
+        }
+        
+        .subsection-duration {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .tasks {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .subsection.open .tasks {
+            max-height: 1000px;
+        }
+        
+        .task {
+            padding: 12px 25px 12px 65px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-top: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+        
+        .task:hover {
+            background: #f8fafc;
+        }
+        
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .task-checkbox:hover {
+            border-color: #3b82f6;
+        }
+        
+        .task-checkbox.checked {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+        
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-name {
+            color: #334155;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        .task.completed .task-name {
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+        
+        .task-details {
+            margin-top: 6px;
+            padding-left: 15px;
+            border-left: 2px solid #e2e8f0;
+        }
+        
+        .task-detail {
+            font-size: 0.85rem;
+            color: #64748b;
+            padding: 2px 0;
+        }
+        
+        .task-duration {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        
+        .output-tag {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 30px;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .section-header {
+                padding: 15px;
+            }
+            
+            .task {
+                padding-left: 45px;
+            }
+            
+            .subsection-header {
+                padding-left: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ Phase 1: 환경 구축</h1>
+            <p>UR5e Sim-to-Real 모방학습 프레임워크</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">완료</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">전체</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalDays">0</div>
+                    <div class="stat-label">예상 일수</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="sections" id="sections">
+            <!-- 1.1 시뮬레이션 환경 -->
+            <div class="section" data-section="sim">
+                <div class="section-header sim" onclick="toggleSection(this)">
+                    <div class="section-title">
+                        <span class="section-icon">🖥️</span>
+                        <span class="section-name">1.1 시뮬레이션 환경 구축</span>
+                    </div>
+                    <div class="section-meta">
+                        <span class="section-duration">📅 6일</span>
+                        <span class="section-progress">0/10</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <!-- 1.1.1 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.1.1 UR5e 로봇 모델 확인 및 설정</span>
+                            <span class="subsection-duration">1일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Isaac Lab 내장 UR5e 모델 확인</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• 위치: omni/isaac/lab_assets/robots/universal_robots/</div>
+                                        <div class="task-detail">• ur5e.py 설정 파일, USD 모델 경로 확인</div>
+                                        <div class="task-detail">• Joint 이름/순서, Default position 확인</div>
+                                    </div>
+                                    <span class="output-tag">📄 UR5e 설정 문서</span>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">UR5e 기본 동작 테스트</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Isaac Lab 예제 실행하여 UR5e 로드 확인</div>
+                                        <div class="task-detail">• Joint position control 테스트</div>
+                                        <div class="task-detail">• Self-collision 체크 동작 확인</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.1.2 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.1.2 Gripper 모델 통합</span>
+                            <span class="subsection-duration">2일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Gripper 선택 및 모델 확보</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Robotiq 2F-85 / 2F-140 검토</div>
+                                        <div class="task-detail">• Isaac Sim 내장 모델 또는 URDF→USD 변환</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="1">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">UR5e + Gripper 조립 (USD Composition)</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• TCP (Tool Center Point) 설정</div>
+                                        <div class="task-detail">• Fixed joint로 연결</div>
+                                        <div class="task-detail">• Combined articulation 구성</div>
+                                    </div>
+                                    <span class="output-tag">📦 ur5e_robotiq.usd</span>
+                                </div>
+                                <span class="task-duration">1일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Gripper 제어 테스트</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Open/Close 동작 확인</div>
+                                        <div class="task-detail">• Position control (0~0.085m)</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.1.3 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.1.3 작업 환경 (Scene) 구성</span>
+                            <span class="subsection-duration">1.5일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">기본 Scene 구성</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Ground plane, Table 설정</div>
+                                        <div class="task-detail">• Lighting, Physics scene 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">조작 대상 물체 추가</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Primitive (cube, cylinder) 추가</div>
+                                        <div class="task-detail">• Mass, Friction 등 물리 속성 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Scene USD 파일 구조화</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• /World/Robot, /World/Table 등 계층 구성</div>
+                                    </div>
+                                    <span class="output-tag">📦 ur5e_workspace.usd</span>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.1.4 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.1.4 Camera 설정</span>
+                            <span class="subsection-duration">1.5일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera 배치 계획</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Wrist / External camera 선택</div>
+                                        <div class="task-detail">• 실제 환경과 동일 위치에 배치</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera 파라미터 설정</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Resolution, FOV 설정</div>
+                                        <div class="task-detail">• Intrinsic parameters 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera 데이터 출력 테스트</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• RGB 이미지 저장/시각화</div>
+                                        <div class="task-detail">• 프레임 레이트 확인</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 1.2 실제 로봇 환경 -->
+            <div class="section" data-section="real">
+                <div class="section-header real" onclick="toggleSection(this)">
+                    <div class="section-title">
+                        <span class="section-icon">🤖</span>
+                        <span class="section-name">1.2 실제 로봇 환경 구축</span>
+                    </div>
+                    <div class="section-meta">
+                        <span class="section-duration">📅 8일</span>
+                        <span class="section-progress">0/13</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <!-- 1.2.1 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.2.1 UR5e 하드웨어 설정</span>
+                            <span class="subsection-duration">2.5일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">UR5e 네트워크 연결</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Robot IP 설정, Ping 테스트</div>
+                                        <div class="task-detail">• Remote Control 활성화</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">ur_robot_driver 설치 (ROS2)</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• apt install 또는 source build</div>
+                                        <div class="task-detail">• RTDE 통신 테스트</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="1">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">ur_robot_driver 실행 테스트</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Launch file 실행</div>
+                                        <div class="task-detail">• RViz에서 로봇 상태 확인</div>
+                                        <div class="task-detail">• Controller 확인</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">1일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">External Control URCap 설정</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• URCap 설치, Host IP 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.2.2 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.2.2 Gripper 하드웨어 연결</span>
+                            <span class="subsection-duration">2일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Gripper 물리적 장착</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Flange 체결, TCP 설정</div>
+                                        <div class="task-detail">• Payload 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="1">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Gripper 통신 설정</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• UR Tool I/O / RS485 / USB 선택</div>
+                                        <div class="task-detail">• URCap 또는 ROS2 패키지 설치</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5-1일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Gripper ROS2 인터페이스</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Action server, Topic 확인</div>
+                                        <div class="task-detail">• ROS2 명령으로 제어 테스트</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.2.3 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.2.3 Camera 설치 및 캘리브레이션</span>
+                            <span class="subsection-duration">2.5일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera 하드웨어 설치</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• 마운트 위치 결정 및 고정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera 드라이버 설치</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• librealsense / ros2 패키지</div>
+                                        <div class="task-detail">• Image topic 확인</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera Intrinsic 캘리브레이션</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Checkerboard로 캘리브레이션</div>
+                                    </div>
+                                    <span class="output-tag">📄 camera.yaml</span>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="1">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera Extrinsic (Hand-eye) 캘리브레이션</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• easy_handeye 사용</div>
+                                        <div class="task-detail">• 15-20 poses 수집</div>
+                                    </div>
+                                    <span class="output-tag">📄 hand_eye_transform.yaml</span>
+                                </div>
+                                <span class="task-duration">1일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.2.4 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.2.4 안전 설정</span>
+                            <span class="subsection-duration">1일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Safety 파라미터 설정</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Joint/TCP limits 설정</div>
+                                        <div class="task-detail">• Safety planes 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Emergency Stop 연동</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• E-stop 버튼 확인</div>
+                                        <div class="task-detail">• Software E-stop 구현</div>
+                                    </div>
+                                    <span class="output-tag">📄 안전 프로토콜 문서</span>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 1.3 Sim-Real 정합성 검증 -->
+            <div class="section" data-section="valid">
+                <div class="section-header valid" onclick="toggleSection(this)">
+                    <div class="section-title">
+                        <span class="section-icon">🔍</span>
+                        <span class="section-name">1.3 Sim-Real 정합성 검증</span>
+                    </div>
+                    <div class="section-meta">
+                        <span class="section-duration">📅 2.25일</span>
+                        <span class="section-progress">0/6</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <!-- 1.3.1 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.3.1 좌표계 및 단위 정렬</span>
+                            <span class="subsection-duration">1일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">좌표계 확인</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Sim/Real base frame 정의</div>
+                                        <div class="task-detail">• 변환 행렬 정의</div>
+                                    </div>
+                                    <span class="output-tag">📄 좌표계 컨벤션 문서</span>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Joint 순서 및 방향 확인</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Joint 이름 매핑</div>
+                                        <div class="task-detail">• Home position 동일 설정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.3.2 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.3.2 동작 범위 검증</span>
+                            <span class="subsection-duration">0.75일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Joint limit 비교</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• 각 Joint별 min/max 비교</div>
+                                        <div class="task-detail">• 불일치 시 Sim 설정 수정</div>
+                                    </div>
+                                    <span class="output-tag">📊 Joint limit 비교표</span>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                            <div class="task" data-duration="0.25">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Gripper 범위 비교</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Open/Close position 값 비교</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.25일</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.3.3 -->
+                    <div class="subsection">
+                        <div class="subsection-header" onclick="toggleSubsection(this)">
+                            <span class="subsection-title">1.3.3 간단한 동작 테스트</span>
+                            <span class="subsection-duration">1.5일</span>
+                        </div>
+                        <div class="tasks">
+                            <div class="task" data-duration="1">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">동일 trajectory 실행 테스트</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• Home → Pose A → Pose B 시퀀스</div>
+                                        <div class="task-detail">• Sim/Real 각각 실행</div>
+                                        <div class="task-detail">• End-effector 위치 오차 측정</div>
+                                    </div>
+                                    <span class="output-tag">📊 오차 분석 리포트</span>
+                                </div>
+                                <span class="task-duration">1일</span>
+                            </div>
+                            <div class="task" data-duration="0.5">
+                                <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                                <div class="task-content">
+                                    <div class="task-name">Camera 영상 비교</div>
+                                    <div class="task-details">
+                                        <div class="task-detail">• 동일 pose에서 이미지 캡처</div>
+                                        <div class="task-detail">• Sim lighting/material 조정</div>
+                                    </div>
+                                </div>
+                                <span class="task-duration">0.5일</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>UR5e Sim-to-Real Imitation Learning Framework</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">진행 상황은 브라우저에 자동 저장됩니다</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 로컬 스토리지에서 상태 복원
+        function loadState() {
+            const saved = localStorage.getItem('phase1_checklist');
+            if (saved) {
+                const state = JSON.parse(saved);
+                document.querySelectorAll('.task').forEach((task, index) => {
+                    if (state.tasks && state.tasks[index]) {
+                        task.classList.add('completed');
+                        task.querySelector('.task-checkbox').classList.add('checked');
+                    }
+                });
+            }
+            updateProgress();
+        }
+        
+        // 상태 저장
+        function saveState() {
+            const tasks = [];
+            document.querySelectorAll('.task').forEach(task => {
+                tasks.push(task.classList.contains('completed'));
+            });
+            localStorage.setItem('phase1_checklist', JSON.stringify({ tasks }));
+        }
+        
+        // 섹션 토글
+        function toggleSection(header) {
+            const section = header.parentElement;
+            section.classList.toggle('open');
+        }
+        
+        // 서브섹션 토글
+        function toggleSubsection(header) {
+            const subsection = header.parentElement;
+            subsection.classList.toggle('open');
+        }
+        
+        // 태스크 체크 토글
+        function toggleTask(checkbox) {
+            checkbox.classList.toggle('checked');
+            const task = checkbox.closest('.task');
+            task.classList.toggle('completed');
+            saveState();
+            updateProgress();
+        }
+        
+        // 진행률 업데이트
+        function updateProgress() {
+            const allTasks = document.querySelectorAll('.task');
+            const completedTasks = document.querySelectorAll('.task.completed');
+            const totalCount = allTasks.length;
+            const completedCount = completedTasks.length;
+            const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+            
+            // 전체 진행률
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressBar').textContent = percentage + '%';
+            document.getElementById('completedCount').textContent = completedCount;
+            document.getElementById('totalCount').textContent = totalCount;
+            
+            // 총 일수 계산
+            let totalDays = 0;
+            allTasks.forEach(task => {
+                totalDays += parseFloat(task.dataset.duration) || 0;
+            });
+            document.getElementById('totalDays').textContent = totalDays.toFixed(1);
+            
+            // 각 섹션별 진행률
+            document.querySelectorAll('.section').forEach(section => {
+                const sectionTasks = section.querySelectorAll('.task');
+                const sectionCompleted = section.querySelectorAll('.task.completed');
+                const progressText = `${sectionCompleted.length}/${sectionTasks.length}`;
+                section.querySelector('.section-progress').textContent = progressText;
+            });
+        }
+        
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            
+            // 모든 섹션 기본 열기
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('open');
+            });
+        });
+    </script>
+</body>
+</html>
